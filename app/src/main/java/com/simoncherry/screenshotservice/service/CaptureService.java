@@ -13,6 +13,7 @@ import android.media.ImageReader;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
@@ -25,15 +26,17 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
-import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.simoncherry.screenshotservice.MyApplication;
 import com.simoncherry.screenshotservice.R;
+import com.simoncherry.screenshotservice.activity.CropActivity;
 import com.simoncherry.screenshotservice.util.BitmapUtil;
+import com.simoncherry.screenshotservice.util.FileUtil;
 import com.simoncherry.screenshotservice.util.MediaScanner;
 
 import java.io.File;
@@ -46,6 +49,7 @@ public class CaptureService extends Service {
 
     private static final String TAG = CaptureService.class.getSimpleName();
 
+    private Context mContext;
     //
     private ImageReader mImageReader;
     private MediaProjection mMediaProjection;
@@ -80,6 +84,7 @@ public class CaptureService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        mContext = CaptureService.this;
         createFloatView();
         createVirtualEnvironment();
     }
@@ -98,7 +103,7 @@ public class CaptureService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent.getBooleanExtra("stop", false)) {
+        if (intent != null && intent.getBooleanExtra("stop", false)) {
             Log.i(TAG, "stopSelf");
             stopSelf();
         }
@@ -197,6 +202,7 @@ public class CaptureService extends Service {
         layoutPreview = (RelativeLayout) inflater.inflate(R.layout.layout_preview, null);
         ivPreview = (ImageView) layoutPreview.findViewById(R.id.iv_preview);
         Button btnCancel = (Button) layoutPreview.findViewById(R.id.btn_cancel);
+        Button btnCrop = (Button) layoutPreview.findViewById(R.id.btn_crop);
         Button btnOK = (Button) layoutPreview.findViewById(R.id.btn_ok);
 
         btnCancel.setOnClickListener(new View.OnClickListener() {
@@ -204,6 +210,31 @@ public class CaptureService extends Service {
             public void onClick(View v) {
                 removePreviewLayout();
                 floatBtn.setVisibility(View.VISIBLE);
+            }
+        });
+
+        btnCrop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Bitmap bitmap = BitmapUtil.getBitmapFromView(ivPreview);
+                if (bitmap != null) {
+                    String path = mContext.getCacheDir().getPath() + "/";
+                    String name = System.currentTimeMillis() + "-crop.png";
+                    FileUtil.saveBitmapToFile(getApplicationContext(), bitmap, path, name);
+
+                    strDate = dateFormat.format(new java.util.Date());
+                    nameImage = pathImage + strDate + ".png";
+
+                    Intent intent = new Intent(mContext, CropActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("srcPath", path + name);
+                    bundle.putString("dstPath", nameImage);
+                    intent.putExtras(bundle);
+                    startActivity(intent);
+
+                    removePreviewLayout();
+                }
             }
         });
 
@@ -412,22 +443,11 @@ public class CaptureService extends Service {
 //            Uri contentUri = Uri.fromFile(fileImage);
 //            media.setData(contentUri);
 //            this.sendBroadcast(media);
-            callMediaScanner(nameImage);
+            MediaScanner.callMediaScanner(getApplicationContext(), nameImage);
+            Toast.makeText(getApplicationContext(), "图片保存到: " + nameImage, Toast.LENGTH_SHORT).show();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * 通知图库刷新
-     *
-     * @param path
-     */
-    private void callMediaScanner(String path) {
-        MediaScanner mediaScanner = new MediaScanner(getApplicationContext());
-        String[] filePaths = new String[]{path};
-        String[] mimeTypes = new String[]{MimeTypeMap.getSingleton().getMimeTypeFromExtension("png")};
-        mediaScanner.scanFiles(filePaths, mimeTypes);
     }
 }

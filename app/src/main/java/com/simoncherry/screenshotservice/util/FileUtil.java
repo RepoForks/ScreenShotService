@@ -2,6 +2,7 @@ package com.simoncherry.screenshotservice.util;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
@@ -176,7 +177,7 @@ public class FileUtil {
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
             fos.flush();
             fos.close();
-            Toast.makeText(context, "图片已保存到 " + path, Toast.LENGTH_SHORT).show();
+            //Toast.makeText(context, "图片已保存到 " + path, Toast.LENGTH_SHORT).show();
 
         } catch (FileNotFoundException e) {
             Toast.makeText(context, "图片保存失败 FileNotFoundException", Toast.LENGTH_SHORT).show();
@@ -185,5 +186,28 @@ public class FileUtil {
             Toast.makeText(context, "图片保存失败 IOException", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
+    }
+
+    public static String getRealFilePath(final Context context, final Uri uri) {
+        if (null == uri) return null;
+        final String scheme = uri.getScheme();
+        String data = null;
+        if (scheme == null)
+            data = uri.getPath();
+        else if (ContentResolver.SCHEME_FILE.equals(scheme)) {
+            data = uri.getPath();
+        } else if (ContentResolver.SCHEME_CONTENT.equals(scheme)) {
+            Cursor cursor = context.getContentResolver().query(uri, new String[]{MediaStore.Images.ImageColumns.DATA}, null, null, null);
+            if (null != cursor) {
+                if (cursor.moveToFirst()) {
+                    int index = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+                    if (index > -1) {
+                        data = cursor.getString(index);
+                    }
+                }
+                cursor.close();
+            }
+        }
+        return data;
     }
 }

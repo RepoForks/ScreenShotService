@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">快速截图</string>
+    <string name="app_name">截图按钮</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>

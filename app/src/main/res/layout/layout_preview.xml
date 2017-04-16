@@ -30,6 +30,13 @@
             android:text="cancel"/>
 
         <Button
+            android:id="@+id/btn_crop"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:text="crop"/>
+
+        <Button
             android:id="@+id/btn_ok"
             android:layout_width="0dp"
             android:layout_height="50dp"

@@ -3,6 +3,7 @@ package com.simoncherry.screenshotservice.util;
 import android.content.Context;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
+import android.webkit.MimeTypeMap;
 
 /**
  * Created by Simon on 2017/3/27.
@@ -64,5 +65,12 @@ public class MediaScanner implements MediaScannerConnection.MediaScannerConnecti
             mediaScanConn.disconnect();//断开扫描服务
             scanTimes = 0;//复位计数
         }
+    }
+
+    public static void callMediaScanner(Context context, String path) {
+        MediaScanner mediaScanner = new MediaScanner(context);
+        String[] filePaths = new String[]{path};
+        String[] mimeTypes = new String[]{MimeTypeMap.getSingleton().getMimeTypeFromExtension("png")};
+        mediaScanner.scanFiles(filePaths, mimeTypes);
     }
 }
