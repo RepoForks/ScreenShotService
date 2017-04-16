@@ -234,6 +234,7 @@ public class CaptureService extends Service {
                     startActivity(intent);
 
                     removePreviewLayout();
+                    floatBtn.setVisibility(View.VISIBLE);
                 }
             }
         });
