@@ -67,11 +67,13 @@ public class CropActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
-            final Uri resultUri = UCrop.getOutput(data);
-            String path = FileUtil.getRealFilePath(getApplicationContext(), resultUri);
-            MediaScanner.callMediaScanner(getApplicationContext(), path);
-            Toast.makeText(getApplicationContext(), "图片保存到: " + path, Toast.LENGTH_SHORT).show();
+        if (requestCode == UCrop.REQUEST_CROP) {
+            if (resultCode == RESULT_OK) {
+                final Uri resultUri = UCrop.getOutput(data);
+                String path = FileUtil.getRealFilePath(getApplicationContext(), resultUri);
+                MediaScanner.callMediaScanner(getApplicationContext(), path);
+                Toast.makeText(getApplicationContext(), "图片保存到: " + path, Toast.LENGTH_SHORT).show();
+            }
             finish();
 
         } else if (resultCode == UCrop.RESULT_ERROR) {
