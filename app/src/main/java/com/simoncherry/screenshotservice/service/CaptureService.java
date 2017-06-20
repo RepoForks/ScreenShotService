@@ -26,7 +26,10 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
+import android.view.animation.Animation;
+import android.view.animation.ScaleAnimation;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -66,7 +69,8 @@ public class CaptureService extends Service {
     private RelativeLayout layoutFloatBtn;
     private ImageButton floatBtn;
     // 截图预览控件
-    private RelativeLayout layoutPreview;
+    private FrameLayout layoutPreview;
+    private RelativeLayout layoutContainer;
     private ImageView ivPreview;
     // 保存截图时文件命名用的
     private SimpleDateFormat dateFormat;
@@ -199,7 +203,8 @@ public class CaptureService extends Service {
      */
     private void addPreviewLayout() {
         LayoutParams previewLayoutParams = getPreviewLayoutParams();
-        layoutPreview = (RelativeLayout) inflater.inflate(R.layout.layout_preview, null);
+        layoutPreview = (FrameLayout) inflater.inflate(R.layout.layout_preview, null);
+        layoutContainer = (RelativeLayout) layoutPreview.findViewById(R.id.layout_container);
         ivPreview = (ImageView) layoutPreview.findViewById(R.id.iv_preview);
         Button btnCancel = (Button) layoutPreview.findViewById(R.id.btn_cancel);
         Button btnCrop = (Button) layoutPreview.findViewById(R.id.btn_crop);
@@ -374,6 +379,8 @@ public class CaptureService extends Service {
                 //saveBitmapToFile(bitmap);
                 addPreviewLayout();
                 ivPreview.setImageBitmap(bitmap);
+                doCaptureAnimation();
+
             } else {
                 floatBtn.setVisibility(View.VISIBLE);
             }
@@ -450,5 +457,28 @@ public class CaptureService extends Service {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void doCaptureAnimation() {
+        Animation animation = new ScaleAnimation(2.0f, 1.0f, 2.0f, 1.0f,
+                Animation.RELATIVE_TO_SELF, 0.5f,
+                Animation.RELATIVE_TO_SELF, 0.5f);
+        animation.setDuration(300);
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                Log.e(TAG, "do Animation");
+            }
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                layoutContainer.clearAnimation();
+            }
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+            }
+        });
+
+        layoutContainer.clearAnimation();
+        layoutContainer.startAnimation(animation);
     }
 }
