@@ -91,6 +91,7 @@ public class CaptureService extends Service {
         mContext = CaptureService.this;
         createFloatView();
         createVirtualEnvironment();
+        setUpMediaProjection();
     }
 
     @Override
@@ -161,8 +162,6 @@ public class CaptureService extends Service {
 
     /**
      * 返回悬浮按钮所在布局的LayoutParams
-     *
-     * @return
      */
     private LayoutParams getFloatLayoutParams() {
         LayoutParams layoutParams = new WindowManager.LayoutParams();
@@ -180,8 +179,6 @@ public class CaptureService extends Service {
 
     /**
      * 返回预览布局的LayoutParams
-     *
-     * @return
      */
     private LayoutParams getPreviewLayoutParams() {
         LayoutParams layoutParams = new WindowManager.LayoutParams();
@@ -269,8 +266,6 @@ public class CaptureService extends Service {
 
     /**
      * 拖动悬浮按钮
-     *
-     * @param event
      */
     private void moveFloatButton(MotionEvent event) {
         wmParams.x = (int) event.getRawX() - floatBtn.getMeasuredWidth() / 2;
@@ -291,7 +286,7 @@ public class CaptureService extends Service {
                 //start virtual
                 startVirtual();
             }
-        }, 1500);
+        }, 500);
 
         Handler handler2 = new Handler();
         handler2.postDelayed(new Runnable() {
@@ -337,15 +332,14 @@ public class CaptureService extends Service {
             Log.i(TAG, "start screen capture intent");
             Log.i(TAG, "want to build mediaprojection and display virtual");
             setUpMediaProjection();
-            //virtualDisplay();
+            virtualDisplay();
 
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                public void run() {
-                    virtualDisplay();
-                }
-            }, 1000);
-
+//            Handler handler = new Handler();
+//            handler.postDelayed(new Runnable() {
+//                public void run() {
+//                    virtualDisplay();
+//                }
+//            }, 1000);
         }
     }
 
@@ -368,6 +362,7 @@ public class CaptureService extends Service {
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void startCapture(){
+        Log.i(TAG, "start capture");
         strDate = dateFormat.format(new java.util.Date());
         nameImage = pathImage + strDate + ".png";
 
@@ -385,6 +380,7 @@ public class CaptureService extends Service {
                 floatBtn.setVisibility(View.VISIBLE);
             }
         } else {
+            Log.i(TAG, "no image data");
             floatBtn.setVisibility(View.VISIBLE);
         }
     }
@@ -409,9 +405,6 @@ public class CaptureService extends Service {
 
     /**
      * 将从ImageReader获取到的Image转换成Bitmap
-     *
-     * @param image
-     * @return
      */
     private Bitmap convertImageToBitmap(Image image) {
         int width = image.getWidth();
@@ -431,8 +424,6 @@ public class CaptureService extends Service {
 
     /**
      * 将Bitmap保存到文件
-     *
-     * @param bitmap
      */
     private void saveBitmapToFile(Bitmap bitmap) {
         try {
